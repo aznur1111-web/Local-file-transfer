@@ -115,6 +115,13 @@ details.paste summary::before{content:'[+] ';color:var(--faint);font-size:10px}
 details.paste[open] summary::before{content:'[−] '}
 details.paste summary:hover{color:var(--fg)}
 details.paste > *:not(summary){margin-top:8px}
+/* FIX-UX-CODE01: Keep manual pairing codes compact and hidden inside the existing disclosure.
+   The code remains selectable/copyable; focus slightly enlarges it for accessibility. */
+#sendLocalCode,#sendRemoteCode,#recvRemoteCode,#recvLocalCode{
+  min-height:44px;height:48px;max-height:58px;padding:5px 7px;
+  font-size:9px;line-height:1.25;overflow-wrap:anywhere;word-break:break-all;
+}
+#sendLocalCode:focus,#sendRemoteCode:focus,#recvRemoteCode:focus,#recvLocalCode:focus{font-size:10px}
 
 .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;background:var(--active);border:1px solid var(--line);border-radius:999px;font-size:11px;color:var(--dim);white-space:nowrap}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--faint);display:inline-block;flex-shrink:0}
@@ -357,7 +364,7 @@ details.diag pre{background:var(--bg);border:1px solid var(--line);border-radius
     <aside class="side-panel">
       <div class="side-card">
         <h3>Send files</h3>
-        <p>Streams in pieces — huge files won't freeze anything.</p>
+        <p>Streams in pieces — original filenames are preserved. Large files use bounded streaming where supported.</p>
         <div class="file-zone" id="fileZone">
           <div class="glyph">⇧</div>
           <strong>Drop a file here</strong>
@@ -411,8 +418,11 @@ details.diag pre{background:var(--bg);border:1px solid var(--line);border-radius
 'use strict';
 const $ = id => document.getElementById(id);
 
-const CHUNK = 48 * 1024;
-const HIGH_WATER = 1024 * 1024;
+// FIX-SPEED01: Use a larger near-ceiling chunk and a deeper bounded send queue for LAN throughput.
+// 60 KiB stays below WebRTC's commonly used 64 KiB default message-size limit.
+const CHUNK = 60 * 1024;
+// FIX-SPEED02: A 4 MiB send queue reduces pauses on fast LAN links while bounding queued memory.
+const HIGH_WATER = 4 * 1024 * 1024;
 const LOW_WATER = HIGH_WATER / 2;
 // FIX-SEC02: Keep the memory-buffered fallback conservative; streaming saves can handle larger files.
 const FALLBACK_MAX = 100 * 1024 * 1024;
@@ -472,7 +482,14 @@ function fmtBytes(n){
   do { n /= 1024; i++; } while(n >= 1024 && i < u.length - 1);
   return n.toFixed(n >= 100 ? 0 : n >= 10 ? 1 : 2) + ' ' + u[i];
 }
-function safeName(n){ return String(n || 'file').replace(/[\\/:*?"<>|\x00-\x1f]/g, '_').slice(0, 200) || 'file'; }
+// FIX-FILENAME01: Preserve ordinary original filenames (including Unicode and punctuation).
+// Strip path components/control characters from untrusted peer metadata, but do not rename
+// normal files. Browser File.name is normally already a basename; path stripping is defensive.
+function safeName(n){
+  const raw = String(n == null ? 'file' : n);
+  const base = raw.split(/[\\/]/).pop().replace(/[\x00-\x1f\x7f]/g, '');
+  return (base && base.trim() ? base : 'file').slice(0, 255) || 'file';
+}
 function safeMime(n){ return typeof n === 'string' && n.length <= 128 && /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/i.test(n) ? n.toLowerCase() : 'application/octet-stream'; }
 function randomId(n = 8){
   if(!window.crypto || !window.crypto.getRandomValues) throw new Error('Secure randomness unavailable.');
@@ -1140,17 +1157,27 @@ async function sendFiles(files){
   }
 }
 
+function getTransferChunkSize(){
+  // FIX-SPEED03: Respect the negotiated channel limit if the peer advertises less than 60 KiB.
+  const max = Number(pc && pc.sctp && pc.sctp.maxMessageSize);
+  if(Number.isFinite(max) && max > 0){
+    const margin = Math.min(1024, Math.floor(max / 16));
+    return Math.max(1, Math.min(CHUNK, max - margin));
+  }
+  return CHUNK;
+}
 async function resumeSend(pf, fromOffset){
   const file = pf.file;
   const id = pf.id;
   // FIX-RESUME05: Never trust a remote resume offset outside this file's valid byte range.
   if(!Number.isSafeInteger(fromOffset) || fromOffset < 0 || fromOffset > file.size) throw new Error('Invalid resume offset. Start this transfer again.');
+  const chunkSize = getTransferChunkSize();
   const doneP = waitFor('done:' + id, SESSION_MS);
   let off = fromOffset;
   pf.offset = off;
   while(off < file.size){
     if(cancelled) throw new Error('Cancelled');
-    const part = await file.slice(off, Math.min(off + CHUNK, file.size)).arrayBuffer();
+    const part = await file.slice(off, Math.min(off + chunkSize, file.size)).arrayBuffer();
     await waitBuffer(dc);
     if(cancelled) throw new Error('Cancelled');
     dc.send(part);
@@ -1454,8 +1481,12 @@ $('resumeBtn').addEventListener('click', () => {
 });
 
 $('sendCopyBtn').addEventListener('click', async () => {
-  try{ await navigator.clipboard.writeText($('sendLocalCode').value); toast('Copied.'); }
-  catch(e){ $('sendLocalCode').select(); toast('Select and copy manually.'); }
+  try{
+    await navigator.clipboard.writeText($('sendLocalCode').value);
+    const disclosure = $('sendCopyBtn').closest('details.paste');
+    if(disclosure) disclosure.open = false;
+    toast('Copied. The code panel was hidden again.');
+  }catch(e){ $('sendLocalCode').select(); toast('Select and copy manually.'); }
 });
 $('sendScanBtn').addEventListener('click', hostScanReply);
 $('sendApplyBtn').addEventListener('click', hostApplyReply);
@@ -1465,8 +1496,12 @@ $('recvOpenCamBtn').addEventListener('click', guestOpenCam);
 $('recvJoinBtn').addEventListener('click', guestJoin);
 $('recvRemoteCode').addEventListener('input', () => { $('recvJoinBtn').disabled = !$('recvRemoteCode').value.trim(); });
 $('recvCopyBtn').addEventListener('click', async () => {
-  try{ await navigator.clipboard.writeText($('recvLocalCode').value); toast('Copied.'); }
-  catch(e){ $('recvLocalCode').select(); toast('Select and copy manually.'); }
+  try{
+    await navigator.clipboard.writeText($('recvLocalCode').value);
+    const disclosure = $('recvCopyBtn').closest('details.paste');
+    if(disclosure) disclosure.open = false;
+    toast('Copied. The code panel was hidden again.');
+  }catch(e){ $('recvLocalCode').select(); toast('Select and copy manually.'); }
 });
 
 $('chatSendBtn').addEventListener('click', () => {
