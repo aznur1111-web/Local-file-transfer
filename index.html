@@ -1,0 +1,1539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Aznur Link — Direct LAN transfer</title>
+<script>try{var _t=localStorage.getItem('aznur-theme');if(_t==='light'||_t==='dark')document.documentElement.setAttribute('data-theme',_t)}catch(e){}</script>
+<style>
+:root{
+  color-scheme:light dark;
+  --bg:#fdfcfc;--fg:#201d1d;--dim:#646262;--faint:#9a9898;
+  --line:#dcd9d9;--accent:#b45309;--accent-h:#92400e;--accent-fg:#fdfcfc;
+  --active:#f4f0ef;--surface:#faf8f7;
+  --good:#10b981;--bad:#b91c1c;
+  --font:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --radius:4px;--rl:6px;
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#161313;--fg:#f1eeee;--dim:#9a9898;--faint:#646262;
+  --line:#302c2c;--accent:#f59e0b;--accent-h:#d97706;--accent-fg:#161313;
+  --active:#211d1d;--surface:#1c1818;
+  --good:#10b981;--bad:#f87171;
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;--bg:#161313;--fg:#f1eeee;--dim:#9a9898;--faint:#646262;
+    --line:#302c2c;--accent:#f59e0b;--accent-h:#d97706;--accent-fg:#161313;
+    --active:#211d1d;--surface:#1c1818;--good:#10b981;--bad:#f87171;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:14.5px/1.55 var(--font);letter-spacing:0;-webkit-font-smoothing:antialiased;min-height:100vh}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.48;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hidden{display:none!important}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+
+.app{max-width:820px;margin:0 auto;padding:16px 20px 48px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0 20px;border-bottom:1px solid var(--line);margin-bottom:20px;flex-wrap:wrap}
+.brand{font-size:15px;font-weight:600;color:var(--fg);text-decoration:none;white-space:nowrap}
+.brand b{color:var(--accent);font-weight:600}
+.top-actions{display:flex;gap:8px;align-items:center}
+.iconbtn{width:34px;height:34px;padding:0;display:inline-grid;place-items:center;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:var(--radius);font-size:14px}
+.iconbtn:hover{border-color:var(--accent)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:6px 12px;font:inherit;font-size:12px;font-weight:600;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:var(--radius);transition:border-color .15s,background .15s;text-decoration:none}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.05)}
+.btn.danger{color:var(--bad);border-style:dashed}
+.btn.danger:hover{border-color:var(--bad)}
+.btn.big{min-height:48px;padding:12px 20px;font-size:14px;font-weight:600}
+.btn.block{width:100%}
+.btn.small{min-height:28px;padding:3px 8px;font-size:11px;border-radius:3px}
+
+.screen{display:none}
+.screen.active{display:block}
+
+.hero{text-align:center;padding:36px 0 20px}
+.eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.12em;font-weight:600;color:var(--accent);margin:0 0 .6rem}
+.hero h1{font-size:clamp(1.4rem,3.5vw,1.9rem);line-height:1.15;letter-spacing:-.02em;margin:0 0 .7rem;font-weight:600}
+.hero p{color:var(--dim);margin:0 auto 28px;max-width:56ch;font-size:13px;line-height:1.6}
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:520px;margin:0 auto}
+@media(max-width:520px){.roles{grid-template-columns:1fr}}
+.role{display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 16px;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--rl);cursor:pointer;transition:border-color .15s,background .15s}
+.role:hover{border-color:var(--accent);background:var(--active)}
+.role-icon{width:48px;height:48px;border-radius:8px;display:grid;place-items:center;font-size:20px;background:var(--active);color:var(--accent);border:1px solid var(--line)}
+.role-title{font-size:14px;font-weight:600;margin:0}
+.role-sub{color:var(--dim);font-size:11.5px;margin:0;line-height:1.45}
+.role-cta{margin-top:auto;padding:8px 16px;border-radius:var(--radius);background:var(--accent);color:var(--accent-fg);font-weight:600;font-size:11.5px;width:100%}
+.footer-note{text-align:center;margin-top:28px;color:var(--dim);font-size:11px;line-height:1.7}
+.footer-note details{margin-top:14px;font-size:11px}
+.footer-note summary{cursor:pointer;color:var(--accent);list-style:none;padding:4px 0}
+.footer-note summary::-webkit-details-marker{display:none}
+.footer-note summary::before{content:'[?] '}
+.footer-note details div{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px;margin-top:8px;line-height:1.6;color:var(--dim)}
+
+.step-head{text-align:center;margin-bottom:20px}
+.step-pill{display:inline-block;padding:3px 10px;border-radius:3px;background:var(--active);color:var(--accent);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;border:1px solid var(--line)}
+.step-head h2{font-size:clamp(1.15rem,3vw,1.4rem);margin:0 0 8px;letter-spacing:-.01em;font-weight:600}
+.step-head p{color:var(--dim);margin:0 auto;font-size:12.5px;max-width:44ch;line-height:1.55}
+
+.qr-box{display:flex;justify-content:center;align-items:center;border:1px dashed var(--line);background:var(--bg);border-radius:var(--radius);padding:12px;margin:14px auto;max-width:380px;min-height:280px}
+/* FIX-QR02: Give dense pairing codes enough on-screen pixels for camera scanning. */
+.qr-box canvas{width:100%;max-width:340px;height:auto;image-rendering:pixelated}
+.qr-box.placeholder{color:var(--dim);text-align:center;font-size:11.5px;line-height:1.5;padding:24px}
+
+.camera{position:relative;margin:14px auto;max-width:380px;background:#000;border-radius:var(--radius);overflow:hidden;aspect-ratio:1;border:1px solid var(--line);display:none}
+.camera.on{display:block}
+.camera video{width:100%;height:100%;object-fit:cover;display:block}
+
+.field{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.field label{font-size:10px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
+textarea,input[type=text]{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:var(--radius);padding:8px 10px;outline:none;min-width:0;font-size:12.5px;font-family:var(--font)}
+textarea{min-height:80px;resize:vertical;font-size:11px;line-height:1.4}
+input[type=text]{min-height:36px}
+input:hover,textarea:hover{border-color:var(--accent)}
+input:focus,textarea:focus{border-color:var(--accent);outline:2px solid var(--accent);outline-offset:2px}
+
+.btnrow{display:flex;gap:6px;flex-wrap:wrap}
+.helper{font-size:11.5px;color:var(--dim);margin-top:8px;line-height:1.5}
+.notice{background:var(--active);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:var(--radius);padding:10px 12px;color:var(--dim);font-size:11.5px;line-height:1.55;margin:10px 0}
+.notice strong{color:var(--fg);font-weight:600}
+.notice::before{content:'[!] ';color:var(--accent);font-weight:600}
+
+details.paste{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;margin:12px 0}
+details.paste summary{cursor:pointer;font-size:11.5px;font-weight:500;color:var(--dim);user-select:none;padding:3px 0;list-style:none}
+details.paste summary::-webkit-details-marker{display:none}
+details.paste summary::before{content:'[+] ';color:var(--faint);font-size:10px}
+details.paste[open] summary::before{content:'[−] '}
+details.paste summary:hover{color:var(--fg)}
+details.paste > *:not(summary){margin-top:8px}
+
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;background:var(--active);border:1px solid var(--line);border-radius:999px;font-size:11px;color:var(--dim);white-space:nowrap}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--faint);display:inline-block;flex-shrink:0}
+.dot.good{background:var(--good)}
+.dot.warn{background:var(--accent)}
+.dot.bad{background:var(--bad)}
+
+/* transfer screen */
+.transfer-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--line);border-radius:var(--rl);background:var(--surface);margin-bottom:14px;flex-wrap:wrap}
+.transfer-head .brand{font-size:14px}
+.verify{display:inline-flex;align-items:center;gap:8px;background:var(--active);border:1px solid var(--line);border-radius:var(--radius);padding:5px 10px;font-size:11px;color:var(--dim)}
+.verify code{font-family:var(--font);font-weight:700;font-size:14px;color:var(--fg);letter-spacing:.12em}
+.verify .label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint)}
+
+.transfer-grid{display:grid;grid-template-columns:1fr 320px;gap:12px}
+@media(max-width:780px){.transfer-grid{grid-template-columns:1fr}}
+.chat-panel{display:flex;flex-direction:column;min-height:420px;background:var(--surface);border:1px solid var(--line);border-radius:var(--rl);overflow:hidden}
+.chat-head{padding:10px 14px;border-bottom:1px solid var(--line);background:var(--bg);font-size:11.5px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
+.chat-scroll{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-height:280px;max-height:520px}
+.chat-empty{margin:auto;text-align:center;color:var(--dim);padding:24px;font-size:12px;max-width:280px;line-height:1.6}
+.bubble{max-width:82%;padding:8px 11px;border-radius:10px;background:var(--active);overflow-wrap:anywhere;white-space:pre-wrap;border:1px solid var(--line);font-size:13px;line-height:1.5}
+.bubble.mine{align-self:flex-end;border-color:var(--accent);border-bottom-right-radius:4px}
+.bubble.theirs{align-self:flex-start;border-bottom-left-radius:4px}
+.bubble.system{align-self:center;font-size:11px;color:var(--dim);background:transparent;padding:3px 10px;max-width:90%;text-align:center;border:0}
+.composer{padding:10px 12px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:flex-end;background:var(--bg)}
+.composer textarea{flex:1;min-height:38px;max-height:100px;font-size:13px}
+.composer .btn{height:38px;padding:0 14px}
+
+.side-panel{display:flex;flex-direction:column;gap:10px}
+.side-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--rl);padding:12px}
+.side-card h3{margin:0 0 4px;font-size:12.5px;font-weight:600}
+.side-card p{margin:0 0 10px;color:var(--dim);font-size:11px;line-height:1.5}
+
+.file-zone{border:1px dashed var(--line);border-radius:var(--radius);padding:14px 12px;text-align:center;background:var(--bg);transition:border-color .15s,background .15s}
+.file-zone:hover,.file-zone.drag{border-color:var(--accent);background:var(--active)}
+.file-zone .glyph{width:34px;height:34px;margin:0 auto 8px;border-radius:8px;display:grid;place-items:center;background:var(--active);color:var(--accent);font-size:15px;border:1px solid var(--line)}
+.file-zone strong{display:block;font-size:12px;margin-bottom:3px;color:var(--fg);font-weight:600}
+.file-zone small{display:block;color:var(--dim);font-size:10.5px;margin-bottom:10px}
+
+.progress{height:4px;background:var(--active);border-radius:99px;overflow:hidden;border:1px solid var(--line);margin-top:10px}
+.progress>div{height:100%;width:0;background:var(--accent);transition:width .12s}
+
+.transfer-item{padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius);margin-top:8px;font-size:11.5px;overflow-wrap:anywhere;background:var(--bg)}
+.transfer-item strong{display:block;margin-bottom:2px;font-weight:600;font-size:12px}
+.transfer-item small{display:block;color:var(--dim);font-size:10.5px}
+.transfer-item .btnrow{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+
+/* STATS BAR */
+.stats-bar{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--rl);padding:12px}
+.stats-bar h3{margin:0 0 8px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:640px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+.stat-item{padding:8px 10px;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius)}
+.stat-item .label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);margin-bottom:2px}
+.stat-item .value{font-family:var(--font);font-size:14px;font-weight:600;color:var(--fg);font-variant-numeric:tabular-nums}
+.stat-item .value.accent{color:var(--accent)}
+
+/* Diagnostics */
+details.diag{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--rl);padding:10px 12px;font-size:11px}
+details.diag summary{cursor:pointer;color:var(--dim);list-style:none;padding:2px 0;font-weight:600}
+details.diag summary::-webkit-details-marker{display:none}
+details.diag summary::before{content:'▸ ';font-size:10px}
+details.diag[open] summary::before{content:'▾ '}
+details.diag pre{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:8px;overflow-x:auto;font-size:10.5px;color:var(--dim);margin:8px 0 0;max-height:220px}
+
+/* Resume banner */
+.resume-banner{background:var(--active);border:1px solid var(--accent);border-left:3px solid var(--accent);border-radius:var(--radius);padding:10px 12px;margin:12px 0;font-size:12px;line-height:1.5;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.resume-banner strong{color:var(--accent)}
+.resume-banner .btn{margin-left:auto}
+
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);padding:8px 14px;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:var(--radius);font-size:12px;max-width:calc(100% - 32px);z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.toast.show{opacity:1}
+
+@media(max-width:520px){
+  .app{padding:12px 12px 36px}
+  .hero{padding:24px 0 16px}
+  .qr-box{min-height:220px}
+  /* FIX-QR03: Use more of the available mobile width for dense codes. */
+  .qr-box canvas{max-width:300px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header class="topbar">
+  <a class="brand" href="#">aznur<b>/</b>link</a>
+  <div class="top-actions">
+    <button class="iconbtn" id="themeBtn" title="Toggle theme">◐</button>
+    <button class="btn danger small hidden" id="clearBtn">Disconnect</button>
+  </div>
+</header>
+
+<!-- LANDING -->
+<section class="screen active" id="scr-landing">
+  <div class="hero">
+    <!-- FIX-UX01: Explain local-network routing accurately; Wi-Fi still uses an access point/router. -->
+    <p class="eyebrow">Direct LAN · no Internet required · no cloud relay</p>
+    <h1>Send files across the room.</h1>
+    <p>Open this page on both devices on the same Wi-Fi or wired local network. One shows a QR, the other scans it. WebRTC uses host candidates only, without a STUN/TURN relay. Wi-Fi traffic still passes through your access point/router or switch, but an Internet connection is not required.</p>
+
+    <div class="roles">
+      <div class="role" id="roleSend" role="button" tabindex="0">
+        <div class="role-icon">⇧</div>
+        <p class="role-title">Send</p>
+        <p class="role-sub">Show a QR code for the other device</p>
+        <span class="role-cta">Start →</span>
+      </div>
+      <div class="role" id="roleReceive" role="button" tabindex="0">
+        <div class="role-icon">⇩</div>
+        <p class="role-title">Receive</p>
+        <p class="role-sub">Scan the QR code from the sender</p>
+        <span class="role-cta">Scan →</span>
+      </div>
+    </div>
+
+    <!-- FIX-UX08: Avoid implying that Wi-Fi traffic bypasses the access point/router. -->
+    <div class="footer-note">
+      Encrypted by WebRTC (DTLS) · No account · Zero configuration<br>
+      Works on a shared local network without requiring Internet access. Wi-Fi still uses its access point/router; this app does not configure a cloud or STUN/TURN relay.
+      <details>
+        <summary>How direct Ethernet works (2 PCs, one cable)</summary>
+        <div>
+          Connect the machines with an Ethernet cable (modern network adapters usually auto-negotiate). They need compatible local IP addresses on the same subnet, whether assigned automatically or configured manually. This app offers host candidates only and does not configure STUN/TURN servers. Direct connection still depends on browser ICE behavior, OS firewall rules, and network interface selection; success is not guaranteed on every device.<br><br>
+          If it doesn't connect: check the OS firewall (allow the browser on the relevant Private network), confirm both interfaces have compatible addresses, and inspect the <em>Diagnostics</em> panel. The data path should use a selected host-to-host candidate pair; the diagnostics panel lists local candidates only.
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- SEND -->
+<section class="screen" id="scr-send">
+  <div class="step-head">
+    <span class="step-pill">Step 1 of 2</span>
+    <h2>Show this to the other device</h2>
+    <p>On the other device, tap <strong>Receive</strong> and scan this QR.</p>
+  </div>
+
+  <div class="qr-box placeholder" id="sendQrBox"><div>Preparing your invite…</div></div>
+
+  <details class="paste">
+    <summary>Can't scan? Copy this text</summary>
+    <textarea id="sendLocalCode" readonly></textarea>
+    <button class="btn small block" id="sendCopyBtn" style="margin-top:6px">Copy code</button>
+  </details>
+
+  <div class="step-head" style="margin-top:24px">
+    <span class="step-pill">Step 2 of 2</span>
+    <h2>Now scan their reply</h2>
+    <p>After they scan yours, their device shows a reply QR. Tap below to scan it.</p>
+  </div>
+
+  <button class="btn primary big block" id="sendScanBtn" disabled>Scan their reply</button>
+
+  <div class="camera" id="sendCam">
+    <video id="sendCamVideo" playsinline muted></video>
+  </div>
+
+  <details class="paste">
+    <summary>Or paste their reply</summary>
+    <textarea id="sendRemoteCode" placeholder="Paste reply code here…"></textarea>
+    <button class="btn primary block" id="sendApplyBtn" style="margin-top:6px" disabled>Connect</button>
+  </details>
+
+  <div class="notice" style="margin-top:16px">
+    <!-- FIX-SEC01: Use a longer short-authentication string and avoid promising absolute identity. -->
+    <strong>Tip.</strong> The chat and file panel open automatically once both devices connect. Compare the 12-digit verification code on both screens over a trusted channel. Pairing codes expire after 10 minutes. A matching verification code helps detect an intercepted exchange, but is not an absolute security guarantee.
+  </div>
+</section>
+
+<!-- RECEIVE -->
+<section class="screen" id="scr-receive">
+  <div id="recvScanStep">
+    <div class="step-head">
+      <span class="step-pill">Step 1 of 2</span>
+      <h2>Scan the sender's QR</h2>
+      <p>Point your camera at the QR code the sender is showing.</p>
+    </div>
+    <button class="btn primary big block" id="recvOpenCamBtn">Open camera &amp; scan</button>
+    <div class="camera" id="recvCam">
+      <video id="recvCamVideo" playsinline muted></video>
+    </div>
+    <details class="paste">
+      <summary>Can't use camera? Paste their code</summary>
+      <textarea id="recvRemoteCode" placeholder="Paste invite code here…"></textarea>
+      <button class="btn primary block" id="recvJoinBtn" style="margin-top:6px">Continue</button>
+    </details>
+  </div>
+
+  <div id="recvAnswerStep" class="hidden">
+    <div class="step-head">
+      <span class="step-pill">Step 2 of 2</span>
+      <h2>Show this to the sender</h2>
+      <p>Have the sender tap <strong>Scan their reply</strong> and point their camera here.</p>
+    </div>
+    <div class="qr-box placeholder" id="recvQrBox"><div>Preparing your reply…</div></div>
+    <details class="paste">
+      <summary>Can't scan? Copy this text instead</summary>
+      <textarea id="recvLocalCode" readonly></textarea>
+      <button class="btn small block" id="recvCopyBtn" style="margin-top:6px">Copy reply</button>
+    </details>
+    <div class="notice" style="margin-top:16px">
+      <strong>Waiting for sender.</strong> The connection completes automatically once they scan your reply. Keep this page open.
+    </div>
+  </div>
+</section>
+
+<!-- TRANSFER -->
+<section class="screen" id="scr-transfer">
+  <div class="transfer-head">
+    <span class="brand">aznur<b>/</b>link</span>
+    <span class="pill"><i class="dot good"></i><span id="connState">Connected</span></span>
+    <span class="verify hidden" id="verifyChip">
+      <span class="label">Verify</span>
+      <code id="verifyCode">--- ---</code>
+    </span>
+    <button class="btn danger small" id="disconnectBtn" style="margin-left:auto">Disconnect</button>
+  </div>
+
+  <div id="resumeBanner" class="resume-banner hidden">
+    <span><strong>Transfer paused.</strong> <span id="resumeMsg"></span></span>
+    <button class="btn primary small" id="resumeBtn">Reconnect to resume →</button>
+  </div>
+
+  <div class="transfer-grid">
+    <div class="chat-panel">
+      <div class="chat-head">Messages · Enter to send · Shift+Enter for new line</div>
+      <div class="chat-scroll" id="chatScroll" role="log" aria-live="polite">
+        <div class="chat-empty" id="chatEmpty">
+          <div>You're connected — say hello, or drop a file from the panel →</div>
+        </div>
+      </div>
+      <div class="composer">
+        <textarea id="chatInput" placeholder="Write a message…" rows="1" maxlength="8000"></textarea>
+        <button class="btn primary" id="chatSendBtn">Send</button>
+      </div>
+    </div>
+
+    <aside class="side-panel">
+      <div class="side-card">
+        <h3>Send files</h3>
+        <p>Streams in pieces — huge files won't freeze anything.</p>
+        <div class="file-zone" id="fileZone">
+          <div class="glyph">⇧</div>
+          <strong>Drop a file here</strong>
+          <!-- FIX-UX03: The no-picker fallback is memory-limited. -->
+          <small>or click to browse · large files stream when supported</small>
+          <input type="file" id="fileInput" multiple hidden>
+          <button class="btn primary small" id="pickFileBtn">Choose files</button>
+        </div>
+        <div class="progress" id="progressBar" style="display:none"><div></div></div>
+        <div id="transferStatus" style="margin-top:8px;font-size:11px;color:var(--dim)"></div>
+      </div>
+
+      <div class="side-card">
+        <h3>Incoming files</h3>
+        <p>You approve each file before it transfers.</p>
+        <div id="incomingList" style="font-size:11px;color:var(--dim)">Nothing yet.</div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- LIVE STATS -->
+  <div class="stats-bar">
+    <h3>Live transfer stats</h3>
+    <div class="stats-grid">
+      <div class="stat-item"><div class="label">Upload</div><div class="value accent" id="statUp">—</div></div>
+      <div class="stat-item"><div class="label">Download</div><div class="value accent" id="statDown">—</div></div>
+      <div class="stat-item"><div class="label">Latency (RTT)</div><div class="value" id="statLatency">—</div></div>
+      <div class="stat-item"><div class="label">Route</div><div class="value" id="statRoute" style="font-size:12px">—</div></div>
+      <div class="stat-item"><div class="label">Chunks ↑ sent</div><div class="value" id="statSentChunks">0</div></div>
+      <div class="stat-item"><div class="label">Chunks ↓ received</div><div class="value" id="statRecvChunks">0</div></div>
+      <div class="stat-item"><div class="label">Bytes sent</div><div class="value" id="statSentBytes" style="font-size:12px">0 B</div></div>
+      <div class="stat-item"><div class="label">Bytes received</div><div class="value" id="statRecvBytes" style="font-size:12px">0 B</div></div>
+    </div>
+  </div>
+
+  <details class="diag">
+    <summary>Diagnostics (advanced)</summary>
+    <pre id="diagContent">Collecting local ICE candidates…</pre>
+  </details>
+</section>
+
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   AZNUR LINK — direct LAN transfer · live stats · short verify
+   · resume-within-session · 100% memory-only
+   ============================================================ */
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+
+const CHUNK = 48 * 1024;
+const HIGH_WATER = 1024 * 1024;
+const LOW_WATER = HIGH_WATER / 2;
+// FIX-SEC02: Keep the memory-buffered fallback conservative; streaming saves can handle larger files.
+const FALLBACK_MAX = 100 * 1024 * 1024;
+const MAX_PENDING_MSG = 16 * 1024 * 1024;
+const SESSION_MS = 60 * 60 * 1000;
+const MAX_CHAT = 500;
+// FIX-DOS01: Limit incoming chat rate independently from the bounded display history.
+const MAX_INCOMING_CHAT_PER_MIN = 60;
+let chatRateWindow = Date.now(), chatRateCount = 0, chatRateWarned = false;
+// FIX-DOS02: Bound pending file-offer UI and the rate of new offers.
+const MAX_PENDING_OFFERS = 10, MAX_FILE_OFFERS_PER_MIN = 20;
+let offerRateWindow = Date.now(), offerRateCount = 0, offerRateWarned = false;
+
+const hasSubtle = !!(window.crypto && window.crypto.subtle && window.crypto.subtle.digest);
+const hasBD = 'BarcodeDetector' in window;
+const hasCam = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+const hasComp = typeof CompressionStream !== 'undefined' && typeof DecompressionStream !== 'undefined';
+const hasSave = typeof window.showSaveFilePicker === 'function';
+
+/* ---------- Theme ---------- */
+const THEME_KEY = 'aznur-theme';
+// FIX-STORAGE01: Validate themes and guard both localStorage reads and writes.
+function applyTheme(v){
+  if(!['system','light','dark'].includes(v)) v = 'system';
+  if(v === 'system') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', v);
+  try{ localStorage.setItem(THEME_KEY, v); }catch{}
+}
+$('themeBtn').addEventListener('click', () => {
+  const cur = document.documentElement.getAttribute('data-theme') || 'system';
+  const next = cur === 'system' ? 'dark' : cur === 'dark' ? 'light' : 'system';
+  applyTheme(next); toast('Theme: ' + next);
+});
+let savedTheme = 'system';
+try{ savedTheme = localStorage.getItem(THEME_KEY) || 'system'; }catch{}
+applyTheme(savedTheme);
+
+let toastT;
+function toast(msg, ms=3200){
+  const el = $('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove('show'), ms);
+}
+
+function show(screen){
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === 'scr-' + screen));
+  window.scrollTo(0, 0);
+}
+
+function fmtBytes(n){
+  if(!Number.isFinite(n) || n < 0) return '—';
+  if(n < 1024) return n + ' B';
+  const u = ['KiB','MiB','GiB','TiB'];
+  let i = -1;
+  do { n /= 1024; i++; } while(n >= 1024 && i < u.length - 1);
+  return n.toFixed(n >= 100 ? 0 : n >= 10 ? 1 : 2) + ' ' + u[i];
+}
+function safeName(n){ return String(n || 'file').replace(/[\\/:*?"<>|\x00-\x1f]/g, '_').slice(0, 200) || 'file'; }
+function safeMime(n){ return typeof n === 'string' && n.length <= 128 && /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/i.test(n) ? n.toLowerCase() : 'application/octet-stream'; }
+function randomId(n = 8){
+  if(!window.crypto || !window.crypto.getRandomValues) throw new Error('Secure randomness unavailable.');
+  const a = new Uint8Array(n);
+  window.crypto.getRandomValues(a);
+  return [...a].map(x => x.toString(16).padStart(2,'0')).join('');
+}
+
+/* ---------- Base64 + package ---------- */
+const enc = new TextEncoder(), dec = new TextDecoder();
+function toB64(b){
+  let bin = '';
+  for(let i = 0; i < b.length; i += 0x8000) bin += String.fromCharCode.apply(null, b.subarray(i, Math.min(i + 0x8000, b.length)));
+  return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function fromB64(s){
+  if(typeof s !== 'string' || s.length > 200000 || !/^[A-Za-z0-9_-]*$/.test(s) || s.length % 4 === 1) throw new Error('Invalid code format.');
+  s = s.replace(/-/g,'+').replace(/_/g,'/');
+  while(s.length % 4) s += '=';
+  const bin = atob(s);
+  if(bin.length > 1024 * 1024) throw new Error('Code too large.');
+  const o = new Uint8Array(bin.length);
+  for(let i = 0; i < bin.length; i++) o[i] = bin.charCodeAt(i);
+  return o;
+}
+async function encodePack(obj){
+  const raw = enc.encode(JSON.stringify(obj));
+  if(hasComp){
+    try{
+      const z = await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
+      if(z.byteLength < raw.byteLength * 0.9) return 'L1G:' + toB64(new Uint8Array(z));
+    }catch(e){}
+  }
+  return 'L1:' + toB64(raw);
+}
+async function readLimited(stream, max){
+  const reader = stream.getReader();
+  const chunks = [];
+  let total = 0;
+  try{
+    while(true){
+      const {done, value} = await reader.read();
+      if(done) break;
+      total += value.byteLength;
+      if(total > max){ try{ await reader.cancel(); }catch{} throw new Error('Code too large.'); }
+      chunks.push(value);
+    }
+  }catch(e){ try{ await reader.cancel(); }catch{} throw e; }
+  finally{ try{ reader.releaseLock(); }catch{} }
+  const out = new Uint8Array(total);
+  let off = 0;
+  for(const c of chunks){ out.set(c, off); off += c.byteLength; }
+  return dec.decode(out);
+}
+async function decodePack(s){
+  s = (s || '').trim();
+  if(!s) throw new Error('Paste a code first.');
+  if(s.length > 200000) throw new Error('Code is too long.');
+  let v;
+  if(s.startsWith('L1G:')){
+    if(!hasComp) throw new Error('This browser cannot read compressed codes.');
+    const bytes = fromB64(s.slice(4));
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    v = JSON.parse(await readLimited(stream, 1024 * 1024));
+  } else if(s.startsWith('L1:')){
+    v = JSON.parse(dec.decode(fromB64(s.slice(3))));
+  } else {
+    try{ v = JSON.parse(s); }catch(e){ throw new Error('Code not recognized.'); }
+  }
+  if(!v || typeof v !== 'object' || Array.isArray(v)) throw new Error('Invalid package.');
+  return v;
+}
+function validatePack(p, type, sid){
+  if(!p || typeof p !== 'object' || Array.isArray(p) || p.v !== 1 || p.t !== type) throw new Error('Unsupported code type.');
+  if(typeof p.sid !== 'string' || !/^[a-f0-9]{16}$/i.test(p.sid)) throw new Error('Invalid session id.');
+  if(sid && p.sid !== sid) throw new Error('This code belongs to a different session.');
+  // FIX-PAIR01: Pairing codes expire after 10 minutes; reject invalid and implausibly future timestamps.
+  if(!Number.isSafeInteger(p.c)) throw new Error('This code has no valid creation time. Create a fresh code.');
+  const age = Date.now() - p.c;
+  if(age < -30000 || age > 10 * 60 * 1000) throw new Error('This code has expired. Create a fresh code.');
+  if(typeof p.sdp !== 'string' || p.sdp.length < 20 || p.sdp.length > 150000 || !/^v=0/.test(p.sdp)) throw new Error('Invalid connection data.');
+  return p;
+}
+
+/* ---------- QR render ---------- */
+function renderQr(canvas, text){
+  const ctx = canvas.getContext('2d');
+  try{
+    const qr = new window.AznurQRCode(-1, 1);
+    qr.addData(text); qr.make();
+    const n = qr.getModuleCount(), quiet = 4;
+    const scale = Math.max(2, Math.floor(520 / (n + quiet * 2)));
+    const size = (n + quiet * 2) * scale;
+    canvas.width = size; canvas.height = size;
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = '#201d1d';
+    for(let r = 0; r < n; r++) for(let c = 0; c < n; c++)
+      if(qr.modules[r][c]) ctx.fillRect((c+quiet)*scale, (r+quiet)*scale, scale, scale);
+    return true;
+  }catch(e){ console.warn('QR failed', e); return false; }
+}
+function setQr(box, text){
+  box.innerHTML = '';
+  box.classList.remove('placeholder');
+  const canvas = document.createElement('canvas');
+  box.appendChild(canvas);
+  if(!renderQr(canvas, text)){
+    box.classList.add('placeholder');
+    box.textContent = 'QR too dense to display. Use copy/paste instead.';
+  }
+}
+
+/* ---------- Camera scan ---------- */
+let camStream = null, camFrame = null, camGen = 0;
+async function startCam(videoEl, onScanned){
+  if(!hasBD){ toast('This browser cannot scan QR codes. Paste the code instead.'); return; }
+  if(!hasCam){ toast('Camera not available. Paste the code instead.'); return; }
+  const token = ++camGen;
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+    if(token !== camGen){ stream.getTracks().forEach(t => t.stop()); return; }
+    camStream = stream;
+    videoEl.srcObject = camStream;
+    videoEl.parentElement.classList.add('on');
+    await videoEl.play();
+    if(token !== camGen) return;
+    const det = new BarcodeDetector({ formats: ['qr_code'] });
+    const loop = async () => {
+      if(token !== camGen || !camStream) return;
+      try{
+        const codes = await det.detect(videoEl);
+        if(token !== camGen) return;
+        if(codes.length && codes[0].rawValue){
+          const v = codes[0].rawValue;
+          stopCam();
+          await onScanned(v);
+          return;
+        }
+      }catch(e){}
+      if(token === camGen) camFrame = requestAnimationFrame(loop);
+    };
+    camFrame = requestAnimationFrame(loop);
+  }catch(e){
+    if(token === camGen){ stopCam(); toast('Camera error: ' + e.message + ' — paste the code instead.'); }
+  }
+}
+function stopCam(){
+  camGen++;
+  if(camFrame){ cancelAnimationFrame(camFrame); camFrame = null; }
+  if(camStream){ camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  $('sendCamVideo').srcObject = null;
+  $('recvCamVideo').srcObject = null;
+  $('sendCam').classList.remove('on');
+  $('recvCam').classList.remove('on');
+}
+
+/* ---------- State ---------- */
+let pc = null, dc = null;
+let role = null;
+let sid = '';
+// FIX-PAIR11: Track the local offer's own age; a fresh answer must not revive an expired offer.
+let offerCreatedAt = 0;
+let pending = new Map();
+let incomingActive = null;
+let sendBusy = false;
+let cancelled = false;
+let expiryTimer = null;
+let expiryAt = 0;
+let statsTimer = null;
+let connGen = 0;
+let blobUrls = [];
+let localCandidates = [];
+
+/* Resume state */
+let pausedFile = null;  // { file, id, name, size, mime, offset }
+let pausedRecv = null;  // { id, name, size, mime, received, chunks, writer } — receiver side
+let pendingResumeOffer = null;
+
+/* Stats */
+const stats = {
+  sentBytes: 0, recvBytes: 0,
+  sentChunks: 0, recvChunks: 0,
+  upMbps: 0, downMbps: 0, latency: null,
+  windowStart: performance.now(),
+  windowSentBytes: 0, windowRecvBytes: 0
+};
+
+/* ---------- Waiters ---------- */
+function waitFor(id, timeout = 120000){
+  return new Promise((res, rej) => {
+    const timer = setTimeout(() => { pending.delete(id); rej(new Error('Timed out.')); }, timeout);
+    pending.set(id, { res, rej, timer });
+  });
+}
+function signal(id, value){
+  const w = pending.get(id);
+  if(w){ clearTimeout(w.timer); pending.delete(id); w.res(value); }
+}
+function rejectAll(reason){
+  for(const w of pending.values()){ clearTimeout(w.timer); try{ w.rej(new Error(reason)); }catch{} }
+  pending.clear();
+}
+
+/* FIX-SEC03: Verification code derived from both DTLS SHA-256 certificate fingerprints. */
+async function computeVerify(l, r){
+  if(!hasSubtle) throw new Error('No crypto.subtle');
+  const parts = [l.toLowerCase(), r.toLowerCase()].sort();
+  const digest = await window.crypto.subtle.digest('SHA-256', enc.encode(parts.join('|')));
+  const hex = [...new Uint8Array(digest)].map(x => x.toString(16).padStart(2,'0')).join('');
+  // 40 bits mapped to a 12-digit display string (about 39.9 bits of comparison space).
+  const num = parseInt(hex.slice(0, 10), 16) % 1000000000000;
+  return String(num).padStart(12, '0');
+}
+async function refreshVerify(){
+  const chip = $('verifyChip'), code = $('verifyCode');
+  if(!pc || !pc.localDescription || !pc.remoteDescription) return;
+  const lm = pc.localDescription.sdp.match(/a=fingerprint:sha-256 ([A-F0-9:]+)/i);
+  const rm = pc.remoteDescription.sdp.match(/a=fingerprint:sha-256 ([A-F0-9:]+)/i);
+  if(!lm || !rm){ chip.classList.remove('hidden'); code.textContent = 'UNAVAILABLE'; return; }
+  try{
+    const v = await computeVerify(lm[1].replace(/:/g,''), rm[1].replace(/:/g,''));
+    chip.classList.remove('hidden');
+    code.textContent = v.slice(0,4) + ' ' + v.slice(4,8) + ' ' + v.slice(8);
+  }catch(e){
+    chip.classList.remove('hidden'); code.textContent = 'UNAVAILABLE';
+  }
+}
+
+/* ---------- Stats UI ---------- */
+function startStats(){
+  if(statsTimer) clearInterval(statsTimer);
+  statsTimer = setInterval(async () => {
+    const now = performance.now();
+    const elapsed = (now - stats.windowStart) / 1000;
+    if(elapsed >= 0.5){
+      stats.upMbps = (stats.windowSentBytes * 8) / elapsed / 1e6;
+      stats.downMbps = (stats.windowRecvBytes * 8) / elapsed / 1e6;
+      stats.windowSentBytes = 0;
+      stats.windowRecvBytes = 0;
+      stats.windowStart = now;
+    }
+    if(pc && pc.connectionState === 'connected'){
+      try{
+        const r = await pc.getStats();
+        let pair = null;
+        r.forEach(s => { if(s.type === 'transport' && s.selectedCandidatePairId) pair = r.get(s.selectedCandidatePairId); });
+        if(!pair) r.forEach(s => { if(s.type === 'candidate-pair' && s.state === 'succeeded' && (s.nominated || s.selected)) pair = s; });
+        if(pair){
+          if(pair.currentRoundTripTime != null) stats.latency = pair.currentRoundTripTime * 1000;
+          const lt = r.get(pair.localCandidateId), rt = r.get(pair.remoteCandidateId);
+          const l = lt && lt.candidateType, rr = rt && rt.candidateType;
+          let route = 'Direct';
+          if(l === 'host' && rr === 'host') route = 'Direct host-to-host'; // FIX-NET01: Host candidates prove no relay, not that the chosen interface is necessarily LAN-local.
+          else if(l === 'relay' || rr === 'relay') route = 'Relayed';
+          else if(l === 'srflx' || rr === 'srflx') route = 'Direct (NAT)';
+          $('statRoute').textContent = route;
+        }
+      }catch(e){}
+    }
+    $('statUp').textContent = stats.upMbps >= 0.01 ? stats.upMbps.toFixed(2) + ' Mbps' : '—';
+    $('statDown').textContent = stats.downMbps >= 0.01 ? stats.downMbps.toFixed(2) + ' Mbps' : '—';
+    $('statLatency').textContent = stats.latency != null ? stats.latency.toFixed(0) + ' ms' : '—';
+    $('statSentChunks').textContent = stats.sentChunks;
+    $('statRecvChunks').textContent = stats.recvChunks;
+    $('statSentBytes').textContent = fmtBytes(stats.sentBytes);
+    $('statRecvBytes').textContent = fmtBytes(stats.recvBytes);
+  }, 500);
+}
+function stopStats(){ if(statsTimer){ clearInterval(statsTimer); statsTimer = null; } }
+
+/* ---------- Diagnostics ---------- */
+function renderDiag(){
+  const el = $('diagContent');
+  if(!localCandidates.length){
+    el.textContent = 'No host candidates were observed yet. This is normal before a connection.';
+    return;
+  }
+  el.textContent = localCandidates.join('\n');
+}
+
+/* ---------- WebRTC (host-only ICE — direct LAN / direct Ethernet) ---------- */
+async function makePeer(initiator){
+  const gen = ++connGen;
+  // FIX-RESUME02: Preserve a matching partial receive so an interrupted transfer can resume.
+  suspendIncomingForResume();
+  if(dc){ dc.onopen=null; dc.onclose=null; dc.onerror=null; dc.onmessage=null; try{dc.close()}catch{} }
+  dc = null;
+  if(pc){ pc.onconnectionstatechange=null; pc.oniceconnectionstatechange=null; pc.onicecandidate=null; pc.ondatachannel=null; try{pc.close()}catch{} }
+
+  // KEY POINT: iceServers: [] → no STUN/TURN → host candidates only.
+  // The data path goes device → LAN switch/cable/AP → device. Router WAN not used.
+  const peer = new RTCPeerConnection({ iceServers: [], bundlePolicy: 'max-bundle', iceCandidatePoolSize: 0 });
+  pc = peer;
+  const current = () => gen === connGen && pc === peer;
+
+  localCandidates = [];
+  peer.onicecandidate = ev => {
+    if(ev.candidate && ev.candidate.candidate){
+      const c = ev.candidate.candidate;
+      const m = c.match(/candidate:(\S+) \d+ (\S+) (\d+) (\S+) (\S+) typ (\S+)/);
+      if(m){
+        const proto = m[2], ip = m[4], port = m[5], typ = m[6];
+        // Only show the parts that matter for LAN diagnostics
+        if(!c.includes('.local') || typ === 'host'){
+          localCandidates.push(`[${typ}] ${proto} ${ip}:${port}`);
+          renderDiag();
+        }
+      }
+    }
+  };
+
+  peer.onconnectionstatechange = () => {
+    if(!current()) return;
+    if(peer.connectionState === 'connected'){
+      armExpiry();
+      enterTransfer();
+    } else if(peer.connectionState === 'failed'){
+      toast('Connection failed. Both devices must be on the same Wi-Fi / Ethernet.');
+      // FIX-RESUME03: Failed links are resumable; preserve partial data until expiry or explicit Disconnect.
+      rejectAll('Connection failed');
+      suspendIncomingForResume();
+      handleDisconnect();
+    } else if(peer.connectionState === 'disconnected'){
+      toast('Connection interrupted — trying to recover…');
+    }
+  };
+  peer.oniceconnectionstatechange = () => {
+    if(current() && peer.iceConnectionState === 'failed'){
+      toast('ICE failed — devices may not be on the same network.');
+    }
+  };
+  peer.ondatachannel = ev => { if(current()) attachChannel(ev.channel, gen); };
+
+  if(initiator){
+    const c = peer.createDataChannel('aznur', { ordered: true });
+    attachChannel(c, gen);
+  }
+  return peer;
+}
+function waitIce(peer, ms = 8000){
+  if(peer.iceGatheringState === 'complete') return Promise.resolve();
+  return new Promise(resolve => {
+    let done = false;
+    const finish = () => { if(done) return; done = true; clearTimeout(t); peer.removeEventListener('icegatheringstatechange', check); resolve(); };
+    const check = () => { if(peer.iceGatheringState === 'complete') finish(); };
+    const t = setTimeout(finish, ms);
+    peer.addEventListener('icegatheringstatechange', check);
+  });
+}
+
+// FIX-RESUME01: Keep partial receive state across unexpected disconnections; abort only on explicit reset.
+function abortIncoming(reason){
+  const st = incomingActive || pausedRecv;
+  incomingActive = null;
+  pausedRecv = null;
+  if(st && st.writer){ try{ const r = st.writer.abort(reason); if(r && r.catch) r.catch(()=>{}); }catch{} }
+}
+function suspendIncomingForResume(){
+  if(pausedRecv){
+    if(incomingActive && incomingActive !== pausedRecv) abortIncoming('Replacing non-resumable receive');
+    else incomingActive = null;
+  } else if(incomingActive) abortIncoming('Connection interrupted');
+}
+
+function attachChannel(ch, gen){
+  dc = ch;
+  dc.binaryType = 'arraybuffer';
+  dc.bufferedAmountLowThreshold = LOW_WATER;
+  let queued = 0;
+  let chain = Promise.resolve();
+  const current = () => gen === connGen && dc === ch;
+
+  dc.onopen = async () => {
+    if(!current()) return;
+    armExpiry();
+    enterTransfer();
+    // FIX-SEC05: Treat the verification string as a safety check, not an identity certificate.
+    addSystem('Connected. Compare the 12-digit verify code with the other device over a trusted channel.');
+    // AUTO-RESUME if a paused transfer exists (only on the sender side)
+    if(pausedFile && !cancelled){
+      try{
+        const replyP = waitFor(pausedFile.id);
+        send({ t:'file-offer', id:pausedFile.id, name:pausedFile.name, size:pausedFile.size, mime:pausedFile.mime, resume:true });
+        const reply = await replyP;
+        if(reply.ok){
+          const resumeFrom = Number.isSafeInteger(reply.resumeFrom) ? reply.resumeFrom : 0;
+          addSystem('Resuming transfer from ' + fmtBytes(resumeFrom) + '…');
+          await resumeSend(pausedFile, resumeFrom);
+        } else {
+          addSystem('Receiver does not have the partial file. Please re-select the file.');
+          pausedFile = null;
+          clearResumeBanner();
+        }
+      }catch(e){ console.warn('Resume failed', e); }
+    }
+  };
+  dc.onclose = () => {
+    if(!current()) return;
+    // FIX-RESUME04: Preserve partial receive state for resume, but release the active stream handler.
+    suspendIncomingForResume();
+    rejectAll('Peer disconnected');
+    if(pausedFile && !cancelled){
+      showResumeBanner('Sender has ' + pausedFile.name + ' at ' + fmtBytes(pausedFile.offset) + '/' + fmtBytes(pausedFile.size) + '. Re-pair to resume.');
+    } else if(pausedRecv && !cancelled){
+      showResumeBanner('Receiver has partial data for ' + pausedRecv.name + '. Re-pair to resume.');
+    } else {
+      toast('Disconnected.');
+    }
+  };
+  dc.onerror = () => { if(current()) toast('Channel error.'); };
+  dc.onmessage = ev => {
+    if(!current() || ch.readyState !== 'open') return;
+    const data = ev.data;
+    const bytes = typeof data === 'string' ? data.length * 2 : (data instanceof ArrayBuffer ? data.byteLength : (ArrayBuffer.isView(data) ? data.byteLength : 0));
+    // FIX-DOS03: A single huge JSON/control frame can consume memory before the queue limit applies.
+    if(typeof data === 'string' && data.length > 256 * 1024){
+      toast('Incoming control message is too large. Closing the connection.');
+      try{ ch.close(); }catch{}
+      return;
+    }
+    if(bytes && queued + bytes > MAX_PENDING_MSG){
+      toast('Incoming queue exceeded 16 MiB. Closing.');
+      abortIncoming('Queue limit');
+      try{ ch.close(); }catch{}
+      return;
+    }
+    queued += bytes;
+    chain = chain.then(() => current() && ch.readyState === 'open' ? handleMsg(data) : undefined)
+      .catch(e => { if(current()){ console.error(e); toast('Message error.'); } })
+      .finally(() => { queued = Math.max(0, queued - bytes); });
+  };
+}
+
+function send(obj){
+  if(!dc || dc.readyState !== 'open') throw new Error('Not connected.');
+  dc.send(JSON.stringify(obj));
+}
+
+/* ---------- Message handling ---------- */
+async function handleMsg(data){
+  if(typeof data !== 'string'){
+    const st = incomingActive;
+    if(!st) return;
+    let chunk = data instanceof ArrayBuffer ? data : (ArrayBuffer.isView(data) ? data : await data.arrayBuffer());
+    const len = chunk.byteLength;
+    if(st.received + len > st.size || (!st.writer && st.received + len > FALLBACK_MAX)){
+      abortIncoming('Overflow');
+      try{ send({ t:'file-done', id: st.id, ok: false, reason: 'Size mismatch.' }); }catch{}
+      throw new Error('Size overflow');
+    }
+    try{
+      if(st.writer) await st.writer.write(chunk); else st.chunks.push(chunk);
+    }catch(e){
+      abortIncoming(e.message);
+      try{ send({ t:'file-done', id: st.id, ok: false, reason: 'Write failed: ' + e.message }); }catch{}
+      throw e;
+    }
+    st.received += len;
+    stats.recvBytes += len;
+    stats.recvChunks++;
+    stats.windowRecvBytes += len;
+    updateProgress('Receiving ' + st.name, st.received, st.size);
+    // Persist partial state for resume
+    if(!pausedRecv || pausedRecv.id !== st.id) pausedRecv = st;
+    else pausedRecv.received = st.received;
+    return;
+  }
+
+  let m;
+  try{ m = JSON.parse(data); }catch{ return; }
+  // FIX-INPUT01: Reject non-object and unknown-shaped control messages before property access.
+  if(!m || typeof m !== 'object' || Array.isArray(m) || typeof m.t !== 'string') return;
+
+  if(m.t === 'chat'){
+    if(typeof m.text === 'string' && m.text.length <= 8000 && allowIncomingChat()) addChat(m.text, false);
+    return;
+  }
+
+  if(m.t === 'file-offer'){
+    if(typeof m.id !== 'string' || !/^[a-f0-9]{8,64}$/i.test(m.id) || !Number.isSafeInteger(m.size) || m.size < 0 || typeof m.name !== 'string' || m.name.length > 512) {
+      if(typeof m.id === 'string') { try{ send({ t:'file-reject', id:m.id, reason:'Invalid file offer metadata.' }); }catch{} }
+      return;
+    }
+    if(!allowIncomingOffer()) { try{ send({ t:'file-reject', id:m.id, reason:'Too many file offers. Try again later.' }); }catch{} return; }
+    if($('incomingList').querySelectorAll('.pending-offer').length >= MAX_PENDING_OFFERS){
+      try{ send({ t:'file-reject', id:m.id, reason:'Too many pending file offers.' }); }catch{}
+      toast('Too many pending offers. Accept or decline an existing offer first.');
+      return;
+    }
+    // Resume path: if we already have a matching partial, respond automatically
+    if(m.resume){
+      if(pausedRecv && pausedRecv.id === m.id && pausedRecv.name === safeName(m.name) && pausedRecv.size === m.size){
+        incomingActive = pausedRecv;
+        send({ t:'file-reply', id: m.id, ok: true, stream: !!incomingActive.writer, resumeFrom: incomingActive.received });
+        return;
+      }
+      if(incomingActive && incomingActive.id === m.id && incomingActive.name === safeName(m.name) && incomingActive.size === m.size){
+        send({ t:'file-reply', id: m.id, ok: true, stream: !!incomingActive.writer, resumeFrom: incomingActive.received });
+        return;
+      }
+      send({ t:'file-reply', id: m.id, ok: false, reason: 'No matching partial state.' });
+      return;
+    }
+    // Normal path: user confirms
+    renderOffer({ id:m.id, name: safeName(m.name), size: m.size, mime: safeMime(m.mime) });
+    return;
+  }
+
+  if(m.t === 'file-reply'){ signal(m.id, m); return; }
+
+  if(m.t === 'file-end'){
+    if(!incomingActive || incomingActive.id !== m.id) return;
+    const st = incomingActive;
+    let ok = false, reason = '';
+    try{
+      if(st.received !== st.size) throw new Error('Size mismatch.');
+      if(st.writer){ await st.writer.close(); }
+      else {
+        const blob = new Blob(st.chunks, { type: st.mime });
+        if(blob.size !== st.size) throw new Error('Blob size mismatch.');
+        const url = URL.createObjectURL(blob);
+        blobUrls.push(url);
+        renderDownload(st, url);
+      }
+      ok = true;
+    }catch(e){
+      reason = e.message;
+      try{ if(st.writer) await st.writer.abort(); }catch{}
+    }
+    incomingActive = null;
+    pausedRecv = null;
+    try{ send({ t:'file-done', id: m.id, ok, reason }); }catch{}
+    if(ok) addSystem('Received: ' + st.name + ' (' + fmtBytes(st.size) + ')');
+    else toast('Receive failed: ' + reason);
+    return;
+  }
+
+  if(m.t === 'file-done'){ signal('done:' + m.id, m); return; }
+  if(m.t === 'file-reject'){ signal(m.id, { ok:false, reason: m.reason || 'Rejected' }); return; }
+  if(m.t === 'file-cancel'){
+    if(incomingActive && incomingActive.id === m.id){ abortIncoming('Sender cancelled'); toast('Transfer cancelled.'); }
+    pausedRecv = null;
+    signal(m.id, { ok:false, reason:'Cancelled' });
+    return;
+  }
+}
+
+/* ---------- Chat ---------- */
+function addChat(text, mine){
+  const scroll = $('chatScroll');
+  const empty = $('chatEmpty'); if(empty) empty.remove();
+  const b = document.createElement('div');
+  b.className = 'bubble ' + (mine ? 'mine' : 'theirs');
+  b.textContent = text;
+  scroll.appendChild(b);
+  while(scroll.querySelectorAll('.bubble').length > MAX_CHAT){ scroll.querySelector('.bubble')?.remove(); }
+  scroll.scrollTop = scroll.scrollHeight;
+}
+function addSystem(text){
+  const scroll = $('chatScroll');
+  const empty = $('chatEmpty'); if(empty) empty.remove();
+  const b = document.createElement('div');
+  b.className = 'bubble system';
+  b.textContent = text;
+  scroll.appendChild(b);
+  while(scroll.querySelectorAll('.bubble').length > MAX_CHAT){ scroll.querySelector('.bubble')?.remove(); }
+  scroll.scrollTop = scroll.scrollHeight;
+}
+// FIX-DOS04: Windowed rate limits avoid unbounded chat/offer rendering from a connected peer.
+function allowIncomingChat(){
+  const now = Date.now();
+  if(now - chatRateWindow >= 60000){ chatRateWindow = now; chatRateCount = 0; chatRateWarned = false; }
+  chatRateCount++;
+  if(chatRateCount <= MAX_INCOMING_CHAT_PER_MIN) return true;
+  if(!chatRateWarned){ chatRateWarned = true; toast('Incoming message rate limit reached; excess messages are being ignored.'); }
+  return false;
+}
+function allowIncomingOffer(){
+  const now = Date.now();
+  if(now - offerRateWindow >= 60000){ offerRateWindow = now; offerRateCount = 0; offerRateWarned = false; }
+  offerRateCount++;
+  if(offerRateCount <= MAX_FILE_OFFERS_PER_MIN) return true;
+  if(!offerRateWarned){ offerRateWarned = true; toast('Incoming file-offer rate limit reached.'); }
+  return false;
+}
+
+/* ---------- Expiry ---------- */
+function armExpiry(){
+  if(expiryTimer) return;
+  expiryAt = Date.now() + SESSION_MS;
+  expiryTimer = setInterval(() => {
+    if(Date.now() > expiryAt){
+      toast('Session expired after 1 hour. Everything cleared.');
+      disconnect();
+    }
+  }, 5000);
+}
+
+/* ---------- Transfer progress ---------- */
+function updateProgress(label, done, total){
+  $('transferStatus').textContent = label + ' · ' + (total ? Math.min(100, done/total*100).toFixed(0) + '%' : '0%');
+  const bar = $('progressBar');
+  bar.style.display = 'block';
+  bar.firstElementChild.style.width = (total ? Math.min(100, done/total*100) : 0) + '%';
+}
+
+/* ---------- File send ---------- */
+async function waitBuffer(ch){
+  if(cancelled) throw new Error('Cancelled');
+  if(!ch || ch.readyState !== 'open') throw new Error('Channel closed');
+  if(ch.bufferedAmount <= HIGH_WATER) return;
+  await new Promise((res, rej) => {
+    let done = false, timer = null;
+    const finish = err => {
+      if(done) return; done = true;
+      if(timer) clearTimeout(timer);
+      ch.removeEventListener('bufferedamountlow', onLow);
+      ch.removeEventListener('close', onClose);
+      ch.removeEventListener('error', onErr);
+      err ? rej(err) : res();
+    };
+    const onLow = () => { if(ch.readyState !== 'open') finish(new Error('Closed')); else if(ch.bufferedAmount <= LOW_WATER) finish(); };
+    const onClose = () => finish(new Error('Closed'));
+    const onErr = () => finish(new Error('Error'));
+    ch.addEventListener('bufferedamountlow', onLow);
+    ch.addEventListener('close', onClose);
+    ch.addEventListener('error', onErr);
+    timer = setTimeout(() => finish(new Error('Buffer timeout')), 120000);
+    onLow();
+  });
+  if(cancelled) throw new Error('Cancelled');
+}
+
+async function sendFiles(files){
+  if(!files.length || !dc || dc.readyState !== 'open') return;
+  if(sendBusy){ toast('A transfer is already running.'); return; }
+  sendBusy = true;
+  cancelled = false;
+  try{
+    for(const file of files){
+      if(cancelled) break;
+      const id = randomId(8);
+      pausedFile = { file, id, name: safeName(file.name), size: file.size, mime: safeMime(file.type), offset: 0 };
+      const replyP = waitFor(id);
+      send({ t:'file-offer', id, name: pausedFile.name, size: file.size, mime: pausedFile.mime, resume: false });
+      updateProgress('Waiting for approval: ' + pausedFile.name, 0, file.size);
+      const reply = await replyP;
+      if(!reply.ok){
+        addSystem('Declined: ' + pausedFile.name);
+        pausedFile = null;
+        continue;
+      }
+      await resumeSend(pausedFile, reply.resumeFrom || 0);
+      pausedFile = null;
+    }
+    toast('Done.');
+  }catch(e){
+    if(!cancelled){
+      if(pausedFile) showResumeBanner('Sender has ' + pausedFile.name + ' at ' + fmtBytes(pausedFile.offset) + '/' + fmtBytes(pausedFile.size) + '.');
+      else toast('Transfer error: ' + e.message);
+    }
+  }finally{
+    sendBusy = false;
+    $('fileInput').value = '';
+  }
+}
+
+async function resumeSend(pf, fromOffset){
+  const file = pf.file;
+  const id = pf.id;
+  // FIX-RESUME05: Never trust a remote resume offset outside this file's valid byte range.
+  if(!Number.isSafeInteger(fromOffset) || fromOffset < 0 || fromOffset > file.size) throw new Error('Invalid resume offset. Start this transfer again.');
+  const doneP = waitFor('done:' + id, SESSION_MS);
+  let off = fromOffset;
+  pf.offset = off;
+  while(off < file.size){
+    if(cancelled) throw new Error('Cancelled');
+    const part = await file.slice(off, Math.min(off + CHUNK, file.size)).arrayBuffer();
+    await waitBuffer(dc);
+    if(cancelled) throw new Error('Cancelled');
+    dc.send(part);
+    stats.sentBytes += part.byteLength;
+    stats.sentChunks++;
+    stats.windowSentBytes += part.byteLength;
+    off += part.byteLength;
+    pf.offset = off;
+    updateProgress('Sending ' + pf.name, off, file.size);
+  }
+  send({ t:'file-end', id });
+  const done = await doneP;
+  if(!done.ok) throw new Error(done.reason || 'Receiver did not confirm.');
+  addSystem('Sent: ' + pf.name + ' (' + fmtBytes(file.size) + ')');
+}
+
+/* ---------- Incoming offers ---------- */
+function renderOffer(meta){
+  const list = $('incomingList');
+  if(list.textContent.includes('Nothing yet')) list.innerHTML = '';
+  const item = document.createElement('div');
+  // FIX-DOS05: Mark pending offers so their count can be bounded independently of completed downloads.
+  item.className = 'transfer-item pending-offer';
+  const name = document.createElement('strong'); name.textContent = safeName(meta.name);
+  const info = document.createElement('small'); info.textContent = fmtBytes(meta.size) + ' · ' + safeMime(meta.mime);
+  const actions = document.createElement('div'); actions.className = 'btnrow';
+  const accept = document.createElement('button'); accept.className = 'btn primary small'; accept.textContent = 'Accept & save';
+  const reject = document.createElement('button'); reject.className = 'btn small danger'; reject.textContent = 'Decline';
+  actions.append(accept, reject);
+  item.append(name, info, actions);
+  list.prepend(item);
+
+  reject.onclick = () => {
+    try{ send({ t:'file-reject', id: meta.id, reason:'Declined' }); }catch{}
+    item.remove();
+    if(!list.children.length) list.textContent = 'Nothing yet.';
+  };
+
+  accept.onclick = async () => {
+    if(incomingActive){ toast('Finish the current file first.'); return; }
+    accept.disabled = true; reject.disabled = true;
+    let writer = null;
+    try{
+      if(hasSave){
+        const handle = await window.showSaveFilePicker({ suggestedName: safeName(meta.name) });
+        writer = await handle.createWritable();
+      } else {
+        if(meta.size > FALLBACK_MAX) throw new Error('This browser cannot save a file that large.');
+        toast('Saving to memory — you will download when it finishes.');
+      }
+      incomingActive = {
+        id: meta.id, name: safeName(meta.name), size: meta.size,
+        mime: safeMime(meta.mime), received: 0, chunks: [], writer
+      };
+      pausedRecv = incomingActive;
+      send({ t:'file-reply', id: meta.id, ok: true, stream: !!writer, resumeFrom: 0 });
+      item.remove();
+      if(!list.children.length) list.textContent = 'Receiving…';
+      updateProgress('Receiving ' + safeName(meta.name), 0, meta.size);
+    }catch(e){
+      if(writer){ try{ const r = writer.abort(); if(r && r.catch) r.catch(()=>{}); }catch{} }
+      try{ send({ t:'file-reply', id: meta.id, ok: false, reason: e.message }); }catch{}
+      item.remove();
+      if(!list.children.length) list.textContent = 'Nothing yet.';
+      if(e.name !== 'AbortError') toast('Could not open destination: ' + e.message);
+    }
+  };
+}
+
+function renderDownload(st, url){
+  const list = $('incomingList');
+  const item = document.createElement('div');
+  item.className = 'transfer-item';
+  const name = document.createElement('strong'); name.textContent = st.name;
+  const info = document.createElement('small'); info.textContent = fmtBytes(st.size) + ' · ready';
+  const a = document.createElement('a'); a.href = url; a.download = st.name; a.textContent = 'Download'; a.className = 'btn primary small';
+  a.style.display = 'inline-block'; a.style.textDecoration = 'none'; a.style.marginTop = '6px';
+  item.append(name, info, a);
+  list.prepend(item);
+}
+
+/* ---------- Resume UI ---------- */
+function showResumeBanner(msg){
+  $('resumeMsg').textContent = msg;
+  $('resumeBanner').classList.remove('hidden');
+}
+function clearResumeBanner(){
+  $('resumeBanner').classList.add('hidden');
+  $('resumeMsg').textContent = '';
+}
+
+/* ---------- Enter transfer screen ---------- */
+function enterTransfer(){
+  show('transfer');
+  // FIX-UX04: Reuse the existing header action as Disconnect after pairing.
+  $('clearBtn').textContent = 'Disconnect';
+  startStats();
+  refreshVerify();
+  renderDiag();
+  $('clearBtn').classList.remove('hidden');
+  setTimeout(() => { try{ $('chatInput').focus(); }catch{} }, 200);
+}
+
+/* ---------- Disconnect (100% wipe) ---------- */
+function disconnect(){
+  // FIX-PAIR07: Invalidate outstanding async pairing steps before clearing peers/UI.
+  pairingRun++;
+  pairingBusy = false;
+  stopCam();
+  stopStats();
+  connGen++;
+  cancelled = true;
+  rejectAll('Disconnected');
+  abortIncoming('Disconnected');
+  if(dc){ dc.onclose=null; dc.onmessage=null; try{dc.close()}catch{} }
+  if(pc){ pc.onconnectionstatechange=null; pc.oniceconnectionstatechange=null; pc.onicecandidate=null; pc.ondatachannel=null; try{pc.close()}catch{} }
+  dc = null; pc = null;
+  if(expiryTimer){ clearInterval(expiryTimer); expiryTimer = null; }
+  blobUrls.forEach(u => { try{ URL.revokeObjectURL(u); }catch{} }); blobUrls = [];
+  sid = ''; role = null; offerCreatedAt = 0;
+  incomingActive = null; pausedFile = null; pausedRecv = null; pendingResumeOffer = null;
+  sendBusy = false;
+  stats.sentBytes = 0; stats.recvBytes = 0;
+  stats.sentChunks = 0; stats.recvChunks = 0;
+  stats.upMbps = 0; stats.downMbps = 0; stats.latency = null;
+  stats.windowSentBytes = 0; stats.windowRecvBytes = 0;
+  stats.windowStart = performance.now();
+  // FIX-DOS06: Reset peer rate-limit windows when the session is deliberately cleared.
+  chatRateWindow = offerRateWindow = Date.now();
+  chatRateCount = offerRateCount = 0;
+  chatRateWarned = offerRateWarned = false;
+  localCandidates = [];
+
+  // Wipe all UI + DOM
+  $('clearBtn').classList.add('hidden');
+  // FIX-UX07: Restore the default label after the pairing cancel action is hidden.
+  $('clearBtn').textContent = 'Disconnect';
+  $('verifyChip').classList.add('hidden');
+  $('verifyCode').textContent = '--- ---';
+  $('sendLocalCode').value = '';
+  $('sendRemoteCode').value = '';
+  $('recvLocalCode').value = '';
+  $('recvRemoteCode').value = '';
+  $('sendQrBox').classList.add('placeholder'); $('sendQrBox').textContent = 'Preparing your invite…';
+  $('recvQrBox').classList.add('placeholder'); $('recvQrBox').textContent = 'Preparing your reply…';
+  $('sendScanBtn').disabled = true; $('sendApplyBtn').disabled = true;
+  $('recvScanStep').classList.remove('hidden'); $('recvAnswerStep').classList.add('hidden');
+  $('incomingList').textContent = 'Nothing yet.';
+  $('transferStatus').textContent = '';
+  $('progressBar').style.display = 'none'; $('progressBar').firstElementChild.style.width = '0%';
+  $('chatScroll').innerHTML = '<div class="chat-empty" id="chatEmpty"><div>You\'re connected — say hello, or drop a file from the panel →</div></div>';
+  $('chatInput').value = '';
+  $('statUp').textContent = '—'; $('statDown').textContent = '—'; $('statLatency').textContent = '—';
+  $('statRoute').textContent = '—'; $('statSentChunks').textContent = '0'; $('statRecvChunks').textContent = '0';
+  $('statSentBytes').textContent = '0 B'; $('statRecvBytes').textContent = '0 B';
+  $('diagContent').textContent = 'Collecting local ICE candidates…';
+  clearResumeBanner();
+  show('landing');
+  toast('Session cleared. Nothing saved.');
+}
+
+/* ---------- Handle unexpected disconnect (keep state for resume) ---------- */
+function handleDisconnect(){
+  if(cancelled) return;
+  if(pausedFile || pausedRecv){
+    showResumeBanner('Re-pair to resume the partial transfer. Nothing is saved unless you complete it.');
+  }
+}
+
+/* ---------- HOST flow ---------- */
+// FIX-PAIR03: Invalidate stale async pairing attempts after each new role/session start.
+let pairingRun = 0, pairingBusy = false;
+async function startHost(){
+  if(pc) disconnect();
+  const run = ++pairingRun;
+  role = 'host';
+  show('send');
+  // FIX-UX05: Let beginners cancel while waiting for the other device to scan/reply.
+  $('clearBtn').textContent = 'Cancel';
+  $('clearBtn').classList.remove('hidden');
+  $('sendQrBox').classList.add('placeholder'); $('sendQrBox').textContent = 'Preparing your invite…';
+  $('sendScanBtn').disabled = true; $('sendApplyBtn').disabled = true;
+  try{
+    const peer = await makePeer(true);
+    if(run !== pairingRun) return;
+    const offer = await peer.createOffer();
+    await peer.setLocalDescription(offer);
+    await waitIce(peer, 8000);
+    if(run !== pairingRun || pc !== peer) return;
+    sid = randomId(8);
+    offerCreatedAt = Date.now();
+    const code = await encodePack({ v:1, t:'offer', sid, sdp: peer.localDescription.sdp, c: offerCreatedAt });
+    if(run !== pairingRun || pc !== peer) return;
+    $('sendLocalCode').value = code;
+    setQr($('sendQrBox'), code);
+    $('sendScanBtn').disabled = false;
+    $('sendApplyBtn').disabled = false;
+    toast('Invite ready. Show the QR or copy the code.');
+  }catch(e){
+    if(run === pairingRun){ toast('Could not create invite: ' + e.message); console.error(e); disconnect(); }
+  }
+}
+async function hostScanReply(){
+  await startCam($('sendCamVideo'), async (val) => {
+    $('sendRemoteCode').value = val;
+    await hostApplyReply();
+  });
+}
+async function hostApplyReply(){
+  const code = $('sendRemoteCode').value.trim();
+  if(!code){ toast('Paste or scan their reply.'); return; }
+  const peer = pc, run = pairingRun;
+  // FIX-PAIR14: Enforce expiry on our own invite, not only the reply package timestamp.
+  if(!offerCreatedAt || Date.now() - offerCreatedAt > 10 * 60 * 1000){ toast('This invite has expired. Disconnect and create a fresh invite.'); return; }
+  if(pairingBusy) return;
+  if(!peer || peer.signalingState !== 'have-local-offer'){ toast('No pending invite.'); return; }
+  // FIX-PAIR10: Prevent duplicate Apply clicks and stale answer application.
+  pairingBusy = true; $('sendApplyBtn').disabled = true;
+  try{
+    const pack = validatePack(await decodePack(code), 'answer', sid);
+    if(run !== pairingRun || pc !== peer) return;
+    await peer.setRemoteDescription({ type:'answer', sdp: pack.sdp });
+    if(run !== pairingRun || pc !== peer) return;
+    toast('Connected. Opening transfer…');
+    await refreshVerify();
+  }catch(e){ if(run === pairingRun) toast('Could not connect: ' + e.message); }
+  finally{ if(run === pairingRun){ pairingBusy = false; $('sendApplyBtn').disabled = !$('sendRemoteCode').value.trim(); } }
+}
+
+/* ---------- GUEST flow ---------- */
+async function startGuest(){
+  if(pc) disconnect();
+  role = 'guest';
+  // FIX-UX05: Show the same Cancel action while receiver pairing is in progress.
+  $('clearBtn').textContent = 'Cancel';
+  $('clearBtn').classList.remove('hidden');
+  $('recvScanStep').classList.remove('hidden');
+  $('recvAnswerStep').classList.add('hidden');
+  $('recvRemoteCode').value = '';
+  $('recvLocalCode').value = '';
+  show('receive');
+}
+async function guestOpenCam(){
+  await startCam($('recvCamVideo'), async (val) => {
+    $('recvRemoteCode').value = val;
+    await guestJoin();
+  });
+}
+async function guestJoin(){
+  const code = $('recvRemoteCode').value.trim();
+  if(!code){ toast('Scan or paste the invite.'); return; }
+  // FIX-PAIR05: Serialize guest setup and do not publish stale answers after Disconnect/re-pair.
+  if(pairingBusy) return;
+  pairingBusy = true;
+  const run = ++pairingRun;
+  $('recvJoinBtn').disabled = true;
+  try{
+    const pack = validatePack(await decodePack(code), 'offer');
+    if(run !== pairingRun) return;
+    sid = pack.sid;
+    const peer = await makePeer(false);
+    if(run !== pairingRun || pc !== peer) return;
+    await peer.setRemoteDescription({ type:'offer', sdp: pack.sdp });
+    const answer = await peer.createAnswer();
+    await peer.setLocalDescription(answer);
+    await waitIce(peer, 8000);
+    if(run !== pairingRun || pc !== peer) return;
+    const out = await encodePack({ v:1, t:'answer', sid, sdp: peer.localDescription.sdp, c: Date.now() });
+    if(run !== pairingRun || pc !== peer) return;
+    $('recvLocalCode').value = out;
+    setQr($('recvQrBox'), out);
+    $('recvScanStep').classList.add('hidden');
+    $('recvAnswerStep').classList.remove('hidden');
+    toast('Reply ready. Have the sender scan it.');
+  }catch(e){ if(run === pairingRun){ toast('Could not join: ' + e.message); console.error(e); } }
+  finally{ if(run === pairingRun){ pairingBusy = false; $('recvJoinBtn').disabled = !$('recvRemoteCode').value.trim(); } }
+}
+
+/* ---------- Events ---------- */
+$('roleSend').addEventListener('click', startHost);
+$('roleReceive').addEventListener('click', startGuest);
+$('roleSend').addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); startHost(); } });
+$('roleReceive').addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); startGuest(); } });
+
+$('clearBtn').addEventListener('click', () => { disconnect(); });
+$('disconnectBtn').addEventListener('click', () => { disconnect(); });
+$('resumeBtn').addEventListener('click', () => {
+  // Send user back to pair screen with state preserved so they can re-pair and resume
+  clearResumeBanner();
+  if(pausedFile){
+    // Sender: go to Send screen (needs new offer + scan answer)
+    if(pc) { try{pc.close()}catch{} }
+    pc = null; dc = null;
+    startHost();
+  } else if(pausedRecv){
+    // Receiver: go to Receive screen (needs new scan + reply)
+    if(pc) { try{pc.close()}catch{} }
+    pc = null; dc = null;
+    startGuest();
+  }
+});
+
+$('sendCopyBtn').addEventListener('click', async () => {
+  try{ await navigator.clipboard.writeText($('sendLocalCode').value); toast('Copied.'); }
+  catch(e){ $('sendLocalCode').select(); toast('Select and copy manually.'); }
+});
+$('sendScanBtn').addEventListener('click', hostScanReply);
+$('sendApplyBtn').addEventListener('click', hostApplyReply);
+$('sendRemoteCode').addEventListener('input', () => { $('sendApplyBtn').disabled = !$('sendRemoteCode').value.trim(); });
+
+$('recvOpenCamBtn').addEventListener('click', guestOpenCam);
+$('recvJoinBtn').addEventListener('click', guestJoin);
+$('recvRemoteCode').addEventListener('input', () => { $('recvJoinBtn').disabled = !$('recvRemoteCode').value.trim(); });
+$('recvCopyBtn').addEventListener('click', async () => {
+  try{ await navigator.clipboard.writeText($('recvLocalCode').value); toast('Copied.'); }
+  catch(e){ $('recvLocalCode').select(); toast('Select and copy manually.'); }
+});
+
+$('chatSendBtn').addEventListener('click', () => {
+  const inp = $('chatInput');
+  const text = inp.value.trim();
+  if(!text || !dc || dc.readyState !== 'open') return;
+  try{ send({ t:'chat', text: text.slice(0, 8000) }); addChat(text, true); inp.value = ''; inp.focus(); }
+  catch(e){ toast(e.message); }
+});
+$('chatInput').addEventListener('keydown', e => {
+  if(e.key === 'Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); $('chatSendBtn').click(); }
+});
+
+$('pickFileBtn').addEventListener('click', () => $('fileInput').click());
+$('fileInput').addEventListener('change', () => {
+  const files = [...$('fileInput').files];
+  if(files.length) sendFiles(files);
+});
+const fz = $('fileZone');
+fz.addEventListener('dragover', e => { e.preventDefault(); fz.classList.add('drag'); });
+fz.addEventListener('dragleave', () => fz.classList.remove('drag'));
+fz.addEventListener('drop', e => {
+  e.preventDefault(); fz.classList.remove('drag');
+  if(e.dataTransfer.files.length) sendFiles([...e.dataTransfer.files]);
+});
+
+window.addEventListener('beforeunload', () => {
+  stopCam();
+  stopStats();
+  if(dc){ try{dc.close()}catch{} }
+  if(pc){ try{pc.close()}catch{} }
+  abortIncoming('Page closed');
+  blobUrls.forEach(u => { try{ URL.revokeObjectURL(u); }catch{} });
+});
+window.addEventListener('keydown', e => { if(e.key === 'Escape') stopCam(); });
+
+if(!hasBD) console.info('Camera QR scanning unavailable — paste fallback enabled.');
+if(!hasSubtle) console.info('Web Crypto SHA-256 unavailable — verify chip will show UNAVAILABLE.');
+})();
+</script>
+
+<!-- QRCode.js (Kazuhiko Arase) MIT — embedded offline QR encoder -->
+<script>
+(function(){
+const M = {};
+M["QR8bitByte"]=function(m,e,r){var QRMode=r('./QRMode');function B(d){this.mode=QRMode.MODE_8BIT_BYTE;this.data=d}B.prototype={getLength:function(){return this.data.length},write:function(b){for(var i=0;i<this.data.length;i++)b.put(this.data.charCodeAt(i),8)}};e.exports=B};
+M["QRBitBuffer"]=function(m,e,r){function B(){this.buffer=[];this.length=0}B.prototype={get:function(i){return((this.buffer[Math.floor(i/8)]>>>(7-i%8))&1)==1},put:function(n,l){for(var i=0;i<l;i++)this.putBit(((n>>>(l-i-1))&1)==1)},getLengthInBits:function(){return this.length},putBit:function(b){var i=Math.floor(this.length/8);if(this.buffer.length<=i)this.buffer.push(0);if(b)this.buffer[i]|=0x80>>>(this.length%8);this.length++}};e.exports=B};
+M["QRErrorCorrectLevel"]=function(m,e,r){e.exports={L:1,M:0,Q:3,H:2}};
+M["QRMaskPattern"]=function(m,e,r){e.exports={PATTERN000:0,PATTERN001:1,PATTERN010:2,PATTERN011:3,PATTERN100:4,PATTERN101:5,PATTERN110:6,PATTERN111:7}};
+M["QRMath"]=function(m,e,r){var Q={glog:function(n){if(n<1)throw new Error("glog("+n+")");return Q.LOG_TABLE[n]},gexp:function(n){while(n<0)n+=255;while(n>=256)n-=255;return Q.EXP_TABLE[n]},EXP_TABLE:new Array(256),LOG_TABLE:new Array(256)};for(var i=0;i<8;i++)Q.EXP_TABLE[i]=1<<i;for(var i=8;i<256;i++)Q.EXP_TABLE[i]=Q.EXP_TABLE[i-4]^Q.EXP_TABLE[i-5]^Q.EXP_TABLE[i-6]^Q.EXP_TABLE[i-8];for(var i=0;i<255;i++)Q.LOG_TABLE[Q.EXP_TABLE[i]]=i;e.exports=Q};
+M["QRMode"]=function(m,e,r){e.exports={MODE_NUMBER:1<<0,MODE_ALPHA_NUM:1<<1,MODE_8BIT_BYTE:1<<2,MODE_KANJI:1<<3}};
+M["QRPolynomial"]=function(m,e,r){var QRMath=r('./QRMath');function P(n,s){if(n.length===undefined)throw new Error(n.length+"/"+s);var o=0;while(o<n.length&&n[o]===0)o++;this.num=new Array(n.length-o+s);for(var i=0;i<n.length-o;i++)this.num[i]=n[i+o]}P.prototype={get:function(i){return this.num[i]},getLength:function(){return this.num.length},multiply:function(e){var n=new Array(this.getLength()+e.getLength()-1);for(var i=0;i<this.getLength();i++)for(var j=0;j<e.getLength();j++)n[i+j]^=QRMath.gexp(QRMath.glog(this.get(i))+QRMath.glog(e.get(j)));return new P(n,0)},mod:function(e){if(this.getLength()-e.getLength()<0)return this;var r=QRMath.glog(this.get(0))-QRMath.glog(e.get(0));var n=new Array(this.getLength());for(var i=0;i<this.getLength();i++)n[i]=this.get(i);for(var x=0;x<e.getLength();x++)n[x]^=QRMath.gexp(QRMath.glog(e.get(x))+r);return new P(n,0).mod(e)}};e.exports=P};
+M["QRRSBlock"]=function(m,e,r){var EC=r('./QRErrorCorrectLevel');function B(t,d){this.totalCount=t;this.dataCount=d}B.RS_BLOCK_TABLE=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]];
+B.getRSBlocks=function(t,e){var b=B.getRsBlockTable(t,e);if(b===undefined)throw new Error("bad rs");var l=b.length/3,list=[];for(var i=0;i<l;i++){var c=b[i*3+0],tc=b[i*3+1],dc=b[i*3+2];for(var j=0;j<c;j++)list.push(new B(tc,dc))}return list};
+B.getRsBlockTable=function(t,e){switch(e){case EC.L:return B.RS_BLOCK_TABLE[(t-1)*4+0];case EC.M:return B.RS_BLOCK_TABLE[(t-1)*4+1];case EC.Q:return B.RS_BLOCK_TABLE[(t-1)*4+2];case EC.H:return B.RS_BLOCK_TABLE[(t-1)*4+3];default:return undefined}};e.exports=B};
+M["QRUtil"]=function(m,e,r){var QRMode=r('./QRMode'),QRPolynomial=r('./QRPolynomial'),QRMath=r('./QRMath'),QRMaskPattern=r('./QRMaskPattern');var Q={PATTERN_POSITION_TABLE:[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],G15:(1<<10)|(1<<8)|(1<<5)|(1<<4)|(1<<2)|(1<<1)|(1<<0),G18:(1<<12)|(1<<11)|(1<<10)|(1<<9)|(1<<8)|(1<<5)|(1<<2)|(1<<0),G15_MASK:(1<<14)|(1<<12)|(1<<10)|(1<<4)|(1<<1),getBCHTypeInfo:function(d){var v=d<<10;while(Q.getBCHDigit(v)-Q.getBCHDigit(Q.G15)>=0)v^=(Q.G15<<(Q.getBCHDigit(v)-Q.getBCHDigit(Q.G15)));return((d<<10)|v)^Q.G15_MASK},getBCHTypeNumber:function(d){var v=d<<12;while(Q.getBCHDigit(v)-Q.getBCHDigit(Q.G18)>=0)v^=(Q.G18<<(Q.getBCHDigit(v)-Q.getBCHDigit(Q.G18)));return(d<<12)|v},getBCHDigit:function(d){var g=0;while(d!==0){g++;d>>>=1}return g},getPatternPosition:function(t){return Q.PATTERN_POSITION_TABLE[t-1]},getMask:function(mp,i,j){switch(mp){case QRMaskPattern.PATTERN000:return(i+j)%2===0;case QRMaskPattern.PATTERN001:return i%2===0;case QRMaskPattern.PATTERN010:return j%3===0;case QRMaskPattern.PATTERN011:return(i+j)%3===0;case QRMaskPattern.PATTERN100:return(Math.floor(i/2)+Math.floor(j/3))%2===0;case QRMaskPattern.PATTERN101:return(i*j)%2+(i*j)%3===0;case QRMaskPattern.PATTERN110:return((i*j)%2+(i*j)%3)%2===0;case QRMaskPattern.PATTERN111:return((i*j)%3+(i+j)%2)%2===0;default:throw new Error("bad mask")}},getErrorCorrectPolynomial:function(l){var a=new QRPolynomial([1],0);for(var i=0;i<l;i++)a=a.multiply(new QRPolynomial([1,QRMath.gexp(i)],0));return a},getLengthInBits:function(mode,type){if(1<=type&&type<10){switch(mode){case QRMode.MODE_NUMBER:return 10;case QRMode.MODE_ALPHA_NUM:return 9;case QRMode.MODE_8BIT_BYTE:return 8;case QRMode.MODE_KANJI:return 8;default:throw new Error("mode")}}else if(type<27){switch(mode){case QRMode.MODE_NUMBER:return 12;case QRMode.MODE_ALPHA_NUM:return 11;case QRMode.MODE_8BIT_BYTE:return 16;case QRMode.MODE_KANJI:return 10;default:throw new Error("mode")}}else if(type<41){switch(mode){case QRMode.MODE_NUMBER:return 14;case QRMode.MODE_ALPHA_NUM:return 13;case QRMode.MODE_8BIT_BYTE:return 16;case QRMode.MODE_KANJI:return 12;default:throw new Error("mode")}}else throw new Error("type")},getLostPoint:function(){return 0}};e.exports=Q};
+M["index"]=function(m,e,r){var QR8bitByte=r('./QR8bitByte'),QRUtil=r('./QRUtil'),QRPolynomial=r('./QRPolynomial'),QRRSBlock=r('./QRRSBlock'),QRBitBuffer=r('./QRBitBuffer');function Q(t,e){this.typeNumber=t;this.errorCorrectLevel=e;this.modules=null;this.moduleCount=0;this.dataCache=null;this.dataList=[]}Q.prototype={addData:function(d){this.dataList.push(new QR8bitByte(d));this.dataCache=null},isDark:function(r,c){if(r<0||this.moduleCount<=r||c<0||this.moduleCount<=c)throw new Error(r+","+c);return this.modules[r][c]},getModuleCount:function(){return this.moduleCount},make:function(){if(this.typeNumber<1){var t=1;for(t=1;t<40;t++){var rb=QRRSBlock.getRSBlocks(t,this.errorCorrectLevel),buf=new QRBitBuffer(),tdc=0;for(var i=0;i<rb.length;i++)tdc+=rb[i].dataCount;for(var x=0;x<this.dataList.length;x++){var d=this.dataList[x];buf.put(d.mode,4);buf.put(d.getLength(),QRUtil.getLengthInBits(d.mode,t));d.write(buf)}if(buf.getLengthInBits()<=tdc*8)break}this.typeNumber=t}this.makeImpl(false,this.getBestMaskPattern())},makeImpl:function(test,mp){this.moduleCount=this.typeNumber*4+17;this.modules=new Array(this.moduleCount);for(var row=0;row<this.moduleCount;row++){this.modules[row]=new Array(this.moduleCount);for(var col=0;col<this.moduleCount;col++)this.modules[row][col]=null}this.setupPositionProbePattern(0,0);this.setupPositionProbePattern(this.moduleCount-7,0);this.setupPositionProbePattern(0,this.moduleCount-7);this.setupPositionAdjustPattern();this.setupTimingPattern();this.setupTypeInfo(test,mp);if(this.typeNumber>=7)this.setupTypeNumber(test);if(this.dataCache===null)this.dataCache=Q.createData(this.typeNumber,this.errorCorrectLevel,this.dataList);this.mapData(this.dataCache,mp)},setupPositionProbePattern:function(row,col){for(var r=-1;r<=7;r++){if(row+r<=-1||this.moduleCount<=row+r)continue;for(var c=-1;c<=7;c++){if(col+c<=-1||this.moduleCount<=col+c)continue;if((0<=r&&r<=6&&(c===0||c===6))||(0<=c&&c<=6&&(r===0||r===6))||(2<=r&&r<=4&&2<=c&&c<=4))this.modules[row+r][col+c]=true;else this.modules[row+r][col+c]=false}}},getBestMaskPattern:function(){var min=0,pat=0;for(var i=0;i<8;i++){this.makeImpl(true,i);var lp=QRUtil.getLostPoint(this);if(i===0||min>lp){min=lp;pat=i}}return pat},setupTimingPattern:function(){for(var r=8;r<this.moduleCount-8;r++){if(this.modules[r][6]!==null)continue;this.modules[r][6]=(r%2===0)}for(var c=8;c<this.moduleCount-8;c++){if(this.modules[6][c]!==null)continue;this.modules[6][c]=(c%2===0)}},setupPositionAdjustPattern:function(){var pos=QRUtil.getPatternPosition(this.typeNumber);for(var i=0;i<pos.length;i++)for(var j=0;j<pos.length;j++){var row=pos[i],col=pos[j];if(this.modules[row][col]!==null)continue;for(var r=-2;r<=2;r++)for(var c=-2;c<=2;c++){if(Math.abs(r)===2||Math.abs(c)===2||(r===0&&c===0))this.modules[row+r][col+c]=true;else this.modules[row+r][col+c]=false}}},setupTypeNumber:function(test){var bits=QRUtil.getBCHTypeNumber(this.typeNumber),mod;for(var i=0;i<18;i++){mod=!test&&((bits>>i)&1)===1;this.modules[Math.floor(i/3)][i%3+this.moduleCount-8-3]=mod}for(var x=0;x<18;x++){mod=!test&&((bits>>x)&1)===1;this.modules[x%3+this.moduleCount-8-3][Math.floor(x/3)]=mod}},setupTypeInfo:function(test,mp){var data=(this.errorCorrectLevel<<3)|mp,bits=QRUtil.getBCHTypeInfo(data),mod;for(var v=0;v<15;v++){mod=!test&&((bits>>v)&1)===1;if(v<6)this.modules[v][8]=mod;else if(v<8)this.modules[v+1][8]=mod;else this.modules[this.moduleCount-15+v][8]=mod}for(var h=0;h<15;h++){mod=!test&&((bits>>h)&1)===1;if(h<8)this.modules[8][this.moduleCount-h-1]=mod;else if(h<9)this.modules[8][15-h-1+1]=mod;else this.modules[8][15-h-1]=mod}this.modules[this.moduleCount-8][8]=!test},mapData:function(data,mp){var inc=-1,row=this.moduleCount-1,bitIndex=7,byteIndex=0;for(var col=this.moduleCount-1;col>0;col-=2){if(col===6)col--;while(true){for(var c=0;c<2;c++){if(this.modules[row][col-c]===null){var dark=false;if(byteIndex<data.length)dark=((data[byteIndex]>>>bitIndex)&1)===1;if(QRUtil.getMask(mp,row,col-c))dark=!dark;this.modules[row][col-c]=dark;bitIndex--;if(bitIndex===-1){byteIndex++;bitIndex=7}}}row+=inc;if(row<0||this.moduleCount<=row){row-=inc;inc=-inc;break}}}}};
+Q.PAD0=0xEC;Q.PAD1=0x11;
+Q.createData=function(t,e,dl){var rb=QRRSBlock.getRSBlocks(t,e),buf=new QRBitBuffer();for(var i=0;i<dl.length;i++){var d=dl[i];buf.put(d.mode,4);buf.put(d.getLength(),QRUtil.getLengthInBits(d.mode,t));d.write(buf)}var tdc=0;for(var x=0;x<rb.length;x++)tdc+=rb[x].dataCount;if(buf.getLengthInBits()>tdc*8)throw new Error("overflow");if(buf.getLengthInBits()+4<=tdc*8)buf.put(0,4);while(buf.getLengthInBits()%8!==0)buf.putBit(false);while(true){if(buf.getLengthInBits()>=tdc*8)break;buf.put(Q.PAD0,8);if(buf.getLengthInBits()>=tdc*8)break;buf.put(Q.PAD1,8)}return Q.createBytes(buf,rb)};
+Q.createBytes=function(buf,rb){var off=0,maxDc=0,maxEc=0,dc=new Array(rb.length),ec=new Array(rb.length);for(var r=0;r<rb.length;r++){var dcc=rb[r].dataCount,ecc=rb[r].totalCount-dcc;maxDc=Math.max(maxDc,dcc);maxEc=Math.max(maxEc,ecc);dc[r]=new Array(dcc);for(var i=0;i<dc[r].length;i++)dc[r][i]=0xff&buf.buffer[i+off];off+=dcc;var rp=QRUtil.getErrorCorrectPolynomial(ecc),raw=new QRPolynomial(dc[r],rp.getLength()-1),mod=raw.mod(rp);ec[r]=new Array(rp.getLength()-1);for(var x=0;x<ec[r].length;x++){var mi=x+mod.getLength()-ec[r].length;ec[r][x]=(mi>=0)?mod.get(mi):0}}var tcc=0;for(var y=0;y<rb.length;y++)tcc+=rb[y].totalCount;var data=new Array(tcc),idx=0;for(var z=0;z<maxDc;z++)for(var s=0;s<rb.length;s++)if(z<dc[s].length)data[idx++]=dc[s][z];for(var xx=0;xx<maxEc;xx++)for(var tt=0;tt<rb.length;tt++)if(xx<ec[tt].length)data[idx++]=ec[tt][xx];return data};
+e.exports=Q};
+const C={};
+// FIX-QR01: Embedded module factories assign through module.exports, so pass the module object as their second argument.
+function req(id){id=String(id).replace(/^\.\//,'').replace(/\.js$/,'');if(C[id])return C[id].exports;if(!M[id])throw new Error('Missing '+id);const m=C[id]={exports:{}};M[id](m,m,(r)=>req(String(r).replace(/^\.\//,'')));return m.exports}
+window.AznurQRCode=req('index');
+})();
+</script>
+
+</body>
+</html>
